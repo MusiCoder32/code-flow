@@ -5,7 +5,7 @@ import { LocalIndex } from 'vectra'
 import { getEmbedding } from './localEmbeddingModel'
 
 // 持久化索引目录（相对 rootDir）
-const KB_INDEX_DIR = 'vectra'
+const indexPath = path.join(process.cwd(), 'src', 'rag', 'vectra')
 
 // 更稳健的 Markdown 拆分：保留标题
 async function splitMarkdown(content: string): Promise<string[]> {
@@ -63,7 +63,6 @@ export interface BuildOptions {
 export async function buildKnowledgeBase(rootDir: string, options: BuildOptions = {}) {
   const { minMarkdownLen = 12, minCodeLen = 6, deduplicate = true, log = true } = options
 
-  const indexPath = path.join(rootDir, KB_INDEX_DIR)
   await fs.mkdir(indexPath, { recursive: true })
   const index = new LocalIndex(indexPath)
 
@@ -75,7 +74,7 @@ export async function buildKnowledgeBase(rootDir: string, options: BuildOptions 
   const files = await fg(['**/*.md', '**/*.js', '**/*.ts', '**/*.vue'], {
     cwd: rootDir,
     absolute: true,
-    ignore: ['**/node_modules/**', `**/${KB_INDEX_DIR}/**`],
+    ignore: ['**/node_modules/**'],
   })
 
   const seen = new Set<string>()
@@ -139,5 +138,7 @@ export async function buildKnowledgeBase(rootDir: string, options: BuildOptions 
 //     process.exit(1)
 //   })
 // }
-const rootDir = '/workspaces/code-flow/src/templates/builtin/simple-vue3-admin'
+
+const rootDir = path.join(process.cwd(), 'src', 'templates', 'builtin', 'simple-vue3-admin')
+
 buildKnowledgeBase(rootDir)
