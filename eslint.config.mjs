@@ -1,5 +1,5 @@
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
-import tsParser from "@typescript-eslint/parser";
+import tsParser from "@typescript-veslint/parser";
 
 export default [{
     files: ["**/*.ts"],
@@ -19,10 +19,10 @@ export default [{
             selector: "import",
             format: ["camelCase", "PascalCase"],
         }],
-
+        'prettier/prettier': ['error', { useTabs: false, endOfLine: 'auto' }],
         curly: "warn",
         eqeqeq: "warn",
         "no-throw-literal": "warn",
-        semi: "warn",
+        semi: "off",
     },
 }];

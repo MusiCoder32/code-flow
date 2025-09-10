@@ -1,65 +1,143 @@
 import fg from 'fast-glob'
 import * as fs from 'fs/promises'
 import path from 'path'
-import { LocvalIndex } from 'vectra'
+import { LocalIndex } from 'vectra'
 import { getEmbedding } from './localEmbeddingModel'
 
-// 持久化索引目录和名称
-const KB_INDEX_DIR = './vectra'
+// 持久化索引目录（相对 rootDir）
+const KB_INDEX_DIR = 'vectra'
 
-// 拆分 Markdown
+// 更稳健的 Markdown 拆分：保留标题
 async function splitMarkdown(content: string): Promise<string[]> {
-    return content
-        .split(/\n\s*\n|^#+\s/m)
-        .map((s) => s.trim())
-        .filter(Boolean)
+  const lines = content.split('\n')
+  const chunks: string[] = []
+  let buf: string[] = []
+  const push = () => {
+    const joined = buf.join('\n').trim()
+    if (joined) chunks.push(joined)
+    buf = []
+  }
+  for (const line of lines) {
+    if (/^#{1,6}\s+/.test(line)) {
+      push()
+      buf.push(line)
+      push()
+    } else if (line.trim() === '') {
+      push()
+    } else {
+      buf.push(line)
+    }
+  }
+  push()
+  return chunks.filter((s) => s.length > 0)
 }
 
-// 拆分代码（可按需优化为更细粒度）
+// 代码拆分（可后续改为按函数 / 按行块）
 async function splitCode(content: string): Promise<string[]> {
-    return [content.trim()]
+  const maxLen = 1200
+  if (content.length <= maxLen) return [content.trim()]
+  const lines = content.split('\n')
+  const chunks: string[] = []
+  let acc: string[] = []
+  let size = 0
+  for (const l of lines) {
+    acc.push(l)
+    size += l.length
+    if (size >= maxLen) {
+      chunks.push(acc.join('\n').trim())
+      acc = []
+      size = 0
+    }
+  }
+  if (acc.length) chunks.push(acc.join('\n').trim())
+  return chunks
 }
 
-async function main(rootDir: string) {
-    // 1. 初始化持久化的 LocalIndex
-    const index = new LocalIndex(path.join(__dirname, './vectra'))
-
-    if (!(await index.isIndexCreated())) {
-        await index.createIndex()
-    }
-
-    // 2. 元信息数组
-    const kbMeta: Array<{ id: string; text: string; file: string }> = []
-
-    // 3. 查找所有待处理文件
-    const files = await fg(['**/*.md', '**/*.js', '**/*.ts', '**/*.vue'], { cwd: rootDir, absolute: true })
-
-
-    for (const file of files) {
-        const ext = path.extname(file)
-        const content = await fs.readFile(file, 'utf-8')
-        let segments: string[] = []
-
-        if (ext === '.md') {
-            segments = await splitMarkdown(content)
-        } else {
-            segments = await splitCode(content)
-        }
-
-        for (const [i, seg] of segments.entries()) {
-            if (ext === '.md') {
-                if (seg.length < 12) continue // 跳过太短内容
-            } else {
-                if (seg.length < 6) continue // 跳过太短内容
-            }
-
-            const emb = await getEmbedding(seg) // 得到单个 embedding 向量
-            await index.insertItem({
-                vector: emb,
-                metadata: { text: seg },
-            })
-        }
-    }
+export interface BuildOptions {
+  minMarkdownLen?: number
+  minCodeLen?: number
+  deduplicate?: boolean
+  log?: boolean
 }
 
-// 命令行用法：node build-knowledge-base.js /your/vue3-admin/
+export async function buildKnowledgeBase(rootDir: string, options: BuildOptions = {}) {
+  const { minMarkdownLen = 12, minCodeLen = 6, deduplicate = true, log = true } = options
+
+  const indexPath = path.join(rootDir, KB_INDEX_DIR)
+  await fs.mkdir(indexPath, { recursive: true })
+  const index = new LocalIndex(indexPath)
+
+  if (!(await index.isIndexCreated())) {
+    await index.createIndex()
+    if (log) console.log('[KB] 创建索引:', indexPath)
+  }
+
+  const files = await fg(['**/*.md', '**/*.js', '**/*.ts', '**/*.vue'], {
+    cwd: rootDir,
+    absolute: true,
+    ignore: ['**/node_modules/**', `**/${KB_INDEX_DIR}/**`],
+  })
+
+  const seen = new Set<string>()
+  let inserted = 0
+
+  for (const file of files) {
+    const ext = path.extname(file)
+    const rel = path.relative(rootDir, file)
+    let content: string
+    try {
+      content = await fs.readFile(file, 'utf-8')
+    } catch {
+      continue
+    }
+
+    let segments: string[]
+    if (ext === '.md') segments = await splitMarkdown(content)
+    else segments = await splitCode(content)
+
+    for (const [i, seg] of segments.entries()) {
+      if (ext === '.md') {
+        if (seg.length < minMarkdownLen) continue
+      } else {
+        if (seg.length < minCodeLen) continue
+      }
+      const hashKey = deduplicate ? `${rel}::${i}::${seg.length}` : undefined
+      if (hashKey && seen.has(hashKey)) continue
+      if (hashKey) seen.add(hashKey)
+
+      let vector: number[]
+      try {
+        vector = await getEmbedding(seg)
+      } catch (e) {
+        if (log) console.warn('[KB] 向量化失败:', rel, e)
+        continue
+      }
+
+      await index.insertItem({
+        vector,
+        metadata: {
+          text: seg,
+          file: rel,
+          ext,
+          idx: i,
+          ts: Date.now(),
+        },
+      })
+      inserted++
+    }
+  }
+
+  if (log) console.log(`[KB] 构建完成：共处理文件 ${files.length}，插入片段 ${inserted}`)
+  return { files: files.length, segments: inserted }
+}
+
+// 允许脚本方式运行：node dist/rag/build-knowledge-base.js <rootDir>
+// if (require.main === module) {
+//   const target = process.argv[2] || process.cwd()
+//   buildKnowledgeBase(target).catch((err) => {
+//     console.error('[KB] 构建失败:', err)
+//     process.exit(1)
+//   })
+// }
+const rootDir = '/workspaces/code-flow/src/templates/builtin/simple-vue3-admin'
+buildKnowledgeBase(rootDir)
