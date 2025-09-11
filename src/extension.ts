@@ -4,6 +4,7 @@ import * as vscode from 'vscode'
 import { showConfigPanel } from './configPanel'
 import { listTemplates, generateProject, initTemplateManager } from './templateManager'
 import { SmartCompletionProvider } from './completionProvider'
+import { InlineRagProvider } from './inlineCompletionProvider'
 
 export function activate(context: vscode.ExtensionContext) {
   initTemplateManager(context)
@@ -48,11 +49,17 @@ export function activate(context: vscode.ExtensionContext) {
     '\n', // 常见触发字符也可以不传，表示默认每次输入触发
   )
 
+  const inlineProvider = vscode.languages.registerInlineCompletionItemProvider(
+    { scheme: 'file' }, // 可加 language: 'typescript'
+    new InlineRagProvider(),
+  )
+
   console.log('Congratulations, your extension "code-flow" is now active!')
 
   context.subscriptions.push(create)
   context.subscriptions.push(config)
   context.subscriptions.push(completion)
+  context.subscriptions.push(inlineProvider)
 }
 
 // This method is called when your extension is deactivated

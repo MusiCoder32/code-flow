@@ -5,7 +5,7 @@ import { LocalIndex } from 'vectra'
 import { getEmbedding } from './localEmbeddingModel'
 
 // 持久化索引目录（相对 rootDir）
-const indexPath = path.join(process.cwd(), 'src', 'rag', 'vectra')
+const indexPath = path.resolve(__dirname, 'vectra')
 
 // 更稳健的 Markdown 拆分：保留标题
 async function splitMarkdown(content: string): Promise<string[]> {

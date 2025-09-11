@@ -25,7 +25,32 @@
         "command": "code-flow.config",
         "title": "CodeFlow:Config"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Code Flow Inline Suggestions",
+      "properties": {
+        "code-flow.inline.minPrefix": {
+          "type": "number",
+          "default": 3,
+          "description": "最小前缀有效字符数(去除符号/空白)后才触发内联补全"
+        },
+        "code-flow.inline.pauseMs": {
+          "type": "number",
+          "default": 1000,
+          "description": "用户停止输入多少毫秒后再进行检索"
+        },
+        "code-flow.inline.throttleMs": {
+          "type": "number",
+          "default": 2000,
+          "description": "两次真实检索的最小间隔"
+        },
+        "code-flow.inline.maxLines": {
+          "type": "number",
+          "default": 12,
+          "description": "单次内联建议截断的最大行数"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
