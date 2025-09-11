@@ -12,6 +12,7 @@ let extractor: any
  */
 export async function initEmbeddingModel() {
   if (loaded) return
+
   const pipeline = await loadPipeline()
   extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2')
   loaded = true
