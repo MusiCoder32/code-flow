@@ -24,14 +24,27 @@
       {
         "command": "simple-assistant.config",
         "title": "simpleAssistant:Config"
+      },
+      {
+        "command": "simpleAssistant.openSnippets",
+        "title": "Simple Assistant: 打开 Snippets 配置"
       }
     ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "simpleAssistant.openSnippets",
+          "when": "true"
+        }
+      ]
+    },
     "configuration": {
-      "title": "Simple Assistant Suggestions",
+      "title": "Simple Assistant",
       "properties": {
-        "simpleAssistant.snippets.simpleTable": {
+        "simpleAssistant.snippetsConfig": {
           "type": "string",
-          "default": "<simple-table\\n        :showAdd=\"true\"\\n        ref=\"tableRef\"\\n        :columns=\"colvumns\"\\n        :getTableData=\"getTableData\"\\n        @add=\"handleAdd\"\\n        :showPage=\"true\">\\n        <el-table-column label=\"操作\" align=\"center\" width=\"120\">\\n            <template #default=\"scope\">\\n                <el-button type=\"primary\" size=\"small\" text icon=\"EditPen\" @click=\"handleLook(scope.row)\">\\n                    查看\\n                </el-button>\\n                <el-button type=\"primary\" size=\"small\" text @click=\"handleEdit(scope.row)\">编辑</el-button>\\n\\n                <el-popconfirm title=\"确定删除吗？\" @confirm=\"handleDel(scope.row)\">\\n                    <template #reference>\\n                        <el-button class=\"!ml0\" type=\"danger\" size=\"small\" text>删除</el-button>\\n                    </template>\\n                </el-popconfirm>\\n            </template>\\n        </el-table-column>\\n    </simple-table>"
+          "default": "",
+          "markdownDescription": "在这里管理片段。点击此链接打开配置文件：[打开 snippets.jsonc](command:simpleAssistant.openSnippets)"
         }
       }
     }

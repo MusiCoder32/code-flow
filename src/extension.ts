@@ -4,7 +4,7 @@ import * as vscode from 'vscode'
 import { showConfigPanel } from './configPanel'
 import { listTemplates, generateProject, initTemplateManager } from './templateManager'
 import { SmartCompletionProvider } from './completionProvider'
-import { InlineRagProvider } from './inlineCompletionProvider'
+// import { InlineRagProvider } from './inlineCompletionProvider'
 
 export function activate(context: vscode.ExtensionContext) {
   initTemplateManager(context)
@@ -53,6 +53,13 @@ export function activate(context: vscode.ExtensionContext) {
   //   { scheme: 'file' }, // 可加 language: 'typescript'
   //   new InlineRagProvider(),
   // )
+
+  vscode.commands.registerCommand('simpleAssistant.openSnippets', async () => {
+    const folder = vscode.workspace.workspaceFolders![0]
+    const file = vscode.Uri.joinPath(folder.uri, '.simple-assistant', 'snippets.jsonc')
+    const doc = await vscode.workspace.openTextDocument(file)
+    await vscode.window.showTextDocument(doc, { preview: false })
+  })
 
   console.log('Congratulations, your extension "simple-assistant" is now active!')
 

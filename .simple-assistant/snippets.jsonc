@@ -1,0 +1,9 @@
+[
+  {
+    "label": "fori",
+    "detail": "for (i) 循环",
+    "languages": ["javascript", "typescript"],
+    "regex": "\\bfori$",
+    "template": "for (let i = 0; i < ${1:arr}.length; i++) {\n\tconst ${2:elem} = ${1:arr}[i]\n\t$0\n}"
+  }
+]
