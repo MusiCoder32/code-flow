@@ -59,7 +59,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(create)
   context.subscriptions.push(config)
   context.subscriptions.push(completion)
-  context.subscriptions.push(inlineProvider)
+  // context.subscriptions.push(inlineProvider) //利用
 }
 
 // This method is called when your extension is deactivated

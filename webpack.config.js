@@ -15,6 +15,8 @@ const extensionConfig = {
     },
     externals: {
         vscode: 'commonjs vscode',
+         vectra: 'commonjs vectra',
+         '@xenova/transformers': 'commonjs @xenova/transformers',
     },
     resolve: {
         extensions: ['.ts', '.js'],
