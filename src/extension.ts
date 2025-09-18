@@ -9,7 +9,7 @@ import { InlineRagProvider } from './inlineCompletionProvider'
 export function activate(context: vscode.ExtensionContext) {
   initTemplateManager(context)
   // 1. 一键生成项目命令
-  const create = vscode.commands.registerCommand('code-flow.createProject', async () => {
+  const create = vscode.commands.registerCommand('simple-assitant.createProject', async () => {
     const templates = listTemplates()
     if (templates.length === 0) {
       vscode.window.showWarningMessage('暂无可用模板，请先在设置中添加模板。')
@@ -32,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
   })
 
   // 2. 配置界面命令
-  const config = vscode.commands.registerCommand('code-flow.config', () => {
+  const config = vscode.commands.registerCommand('simple-assitant.config', () => {
     showConfigPanel(context)
     vscode.window.showInformationMessage('config from CodeFlow111!')
   })
@@ -54,7 +54,7 @@ export function activate(context: vscode.ExtensionContext) {
     new InlineRagProvider(),
   )
 
-  console.log('Congratulations, your extension "code-flow" is now active!')
+  console.log('Congratulations, your extension "simple-assitant" is now active!')
 
   context.subscriptions.push(create)
   context.subscriptions.push(config)
