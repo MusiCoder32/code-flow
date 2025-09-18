@@ -9,7 +9,7 @@ import { InlineRagProvider } from './inlineCompletionProvider'
 export function activate(context: vscode.ExtensionContext) {
   initTemplateManager(context)
   // 1. 一键生成项目命令
-  const create = vscode.commands.registerCommand('simple-assitant.createProject', async () => {
+  const create = vscode.commands.registerCommand('simple-assistant.createProject', async () => {
     const templates = listTemplates()
     if (templates.length === 0) {
       vscode.window.showWarningMessage('暂无可用模板，请先在设置中添加模板。')
@@ -32,9 +32,9 @@ export function activate(context: vscode.ExtensionContext) {
   })
 
   // 2. 配置界面命令
-  const config = vscode.commands.registerCommand('simple-assitant.config', () => {
+  const config = vscode.commands.registerCommand('simple-assistant.config', () => {
     showConfigPanel(context)
-    vscode.window.showInformationMessage('config from CodeFlow111!')
+    vscode.window.showInformationMessage('config from simpleAssistant111!')
   })
 
   const completion = vscode.languages.registerCompletionItemProvider(
@@ -49,12 +49,12 @@ export function activate(context: vscode.ExtensionContext) {
     '\n', // 常见触发字符也可以不传，表示默认每次输入触发
   )
 
-  const inlineProvider = vscode.languages.registerInlineCompletionItemProvider(
-    { scheme: 'file' }, // 可加 language: 'typescript'
-    new InlineRagProvider(),
-  )
+  // const inlineProvider = vscode.languages.registerInlineCompletionItemProvider(
+  //   { scheme: 'file' }, // 可加 language: 'typescript'
+  //   new InlineRagProvider(),
+  // )
 
-  console.log('Congratulations, your extension "simple-assitant" is now active!')
+  console.log('Congratulations, your extension "simple-assistant" is now active!')
 
   context.subscriptions.push(create)
   context.subscriptions.push(config)

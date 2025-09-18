@@ -1,6 +1,6 @@
 {
-  "name": "simple-assitant",
-  "displayName": "CodeFlow",
+  "name": "simple-assistant",
+  "displayName": "simpleAssistant",
   "description": "内置本地轻量级LLM（如TinyLlavma），实时分析用户代码上下文，支持切换云端LLM（如GPT-4/Claude），通过API混合增强推理精度",
   "version": "0.0.1",
   "engines": {
@@ -18,36 +18,20 @@
   "contributes": {
     "commands": [
       {
-        "command": "simple-assitant.createProject",
-        "title": "CodeFlow:CreateProject"
+        "command": "simple-assistant.createProject",
+        "title": "simpleAssistant:CreateProject"
       },
       {
-        "command": "simple-assitant.config",
-        "title": "CodeFlow:Config"
+        "command": "simple-assistant.config",
+        "title": "simpleAssistant:Config"
       }
     ],
     "configuration": {
-      "title": "Code Flow Inline Suggestions",
+      "title": "Simple Assistant Suggestions",
       "properties": {
-        "simple-assitant.inline.minPrefix": {
-          "type": "number",
-          "default": 3,
-          "description": "最小前缀有效字符数(去除符号/空白)后才触发内联补全"
-        },
-        "simple-assitant.inline.pauseMs": {
-          "type": "number",
-          "default": 1000,
-          "description": "用户停止输入多少毫秒后再进行检索"
-        },
-        "simple-assitant.inline.throttleMs": {
-          "type": "number",
-          "default": 2000,
-          "description": "两次真实检索的最小间隔"
-        },
-        "simple-assitant.inline.maxLines": {
-          "type": "number",
-          "default": 12,
-          "description": "单次内联建议截断的最大行数"
+        "simpleAssistant.snippets.simpleTable": {
+          "type": "string",
+          "default": "<simple-table\\n        :showAdd=\"true\"\\n        ref=\"tableRef\"\\n        :columns=\"colvumns\"\\n        :getTableData=\"getTableData\"\\n        @add=\"handleAdd\"\\n        :showPage=\"true\">\\n        <el-table-column label=\"操作\" align=\"center\" width=\"120\">\\n            <template #default=\"scope\">\\n                <el-button type=\"primary\" size=\"small\" text icon=\"EditPen\" @click=\"handleLook(scope.row)\">\\n                    查看\\n                </el-button>\\n                <el-button type=\"primary\" size=\"small\" text @click=\"handleEdit(scope.row)\">编辑</el-button>\\n\\n                <el-popconfirm title=\"确定删除吗？\" @confirm=\"handleDel(scope.row)\">\\n                    <template #reference>\\n                        <el-button class=\"!ml0\" type=\"danger\" size=\"small\" text>删除</el-button>\\n                    </template>\\n                </el-popconfirm>\\n            </template>\\n        </el-table-column>\\n    </simple-table>"
         }
       }
     }

@@ -1,6 +1,4 @@
 import * as vscode from 'vscode'
-// import { runLLM } from './llm/llamaRunner';
-import { queryTexts } from './rag/retriever'
 
 export class SmartCompletionProvider implements vscode.CompletionItemProvider {
   async provideCompletionItems(doc: vscode.TextDocument, pos: vscode.Position): Promise<vscode.CompletionItem[]> {
@@ -9,30 +7,27 @@ export class SmartCompletionProvider implements vscode.CompletionItemProvider {
     const lineCode = doc.getText(lineRange)
     const filePath = doc.uri.fsPath
 
-    const { combined } = await queryTexts(full, lineCode, pos.line, filePath, 6)
+    // 1) 内置 <simple-table> 片段
+    if (/<simple-[\w-]*$/.test(lineCode)) {
+      const start = lineCode.lastIndexOf('<simple-')
+      const replaceRange = new vscode.Range(pos.line, start, pos.line, pos.character)
 
-    const retrievedText = combined
-      .map((c, i) => `---SNIPPET ${i + 1} (score=${c.score.toFixed(3)} file=${c.file})---\n${c.text}`)
-      .join('\n')
+      const cfg = vscode.workspace.getConfiguration('codeFlow')
+      const userTpl = cfg.get<string>('snippets.simpleTable')
 
-    const prompt = [
-      '[CURRENT_LINE]',
-      lineCode,
-      '[FILE_PATH]',
-      filePath,
-      '[RETRIEVED_SNIPPETS]',
-      retrievedText,
-      '[TASK]',
-      '根据当前行与检索片段生成合理续写，只输出代码片段：',
-    ].join('\n')
+      const snippet = new vscode.CompletionItem('<simple-table>', vscode.CompletionItemKind.Snippet)
+      snippet.insertText = new vscode.SnippetString(userTpl)
+      snippet.detail = '内置片段: <simple-table>'
+      snippet.documentation = new vscode.MarkdownString('插入 simple-table 组件模板（可在设置中自定义）')
+      snippet.filterText = '<simple-table'
+      snippet.sortText = '0000'
+      snippet.preselect = true
+      snippet.range = replaceRange
+      snippet.commitCharacters = ['>']
+      return [snippet]
+    }
 
-    const item = new vscode.CompletionItem(
-      lineCode.trim() ? lineCode.trim() : 'code_suggestion',
-      vscode.CompletionItemKind.Text,
-    )
-    item.detail = 'RAG 相关上下文'
-    item.documentation = retrievedText
-    // 真实补全应调用 LLM(prompt)
+    const item = new vscode.CompletionItem('simple-table', vscode.CompletionItemKind.Snippet)
     return [item]
   }
 }
